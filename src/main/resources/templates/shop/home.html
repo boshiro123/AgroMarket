@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Главная - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <!-- Приветствие -->
+      <div class="jumbotron py-5 bg-light rounded-3 mb-4">
+        <div class="container">
+          <h1 class="display-4">Добро пожаловать в магазин сельхозтехники!</h1>
+          <p class="lead" sec:authorize="!isAuthenticated()">
+            Для совершения покупок, пожалуйста,
+            <a th:href="@{/login}">войдите</a> или
+            <a th:href="@{/register}">зарегистрируйтесь</a>.
+          </p>
+          <p class="lead" sec:authorize="isAuthenticated()">
+            Рады видеть вас,
+            <span sec:authentication="name">Пользователь</span>!
+          </p>
+        </div>
+      </div>
+
+      <!-- Категории товаров -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h2>Категории техники</h2>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Тракторы</h5>
+              <p class="card-text">
+                Сельскохозяйственные тракторы различной мощности
+              </p>
+              <a href="/products?category=tractors" class="btn btn-primary"
+                >Перейти к категории</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Комбайны</h5>
+              <p class="card-text">Зерноуборочные и кормоуборочные комбайны</p>
+              <a href="/products?category=combines" class="btn btn-primary"
+                >Перейти к категории</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Сеялки</h5>
+              <p class="card-text">
+                Посевное оборудование для различных культур
+              </p>
+              <a href="/products?category=seeders" class="btn btn-primary"
+                >Перейти к категории</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Преимущества -->
+      <div class="row">
+        <div class="col-12">
+          <h2>Почему выбирают нас</h2>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="text-center">
+            <i class="bi bi-truck display-4"></i>
+            <h5>Доставка по всей стране</h5>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="text-center">
+            <i class="bi bi-shield-check display-4"></i>
+            <h5>Гарантия качества</h5>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="text-center">
+            <i class="bi bi-tools display-4"></i>
+            <h5>Сервисное обслуживание</h5>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="text-center">
+            <i class="bi bi-credit-card display-4"></i>
+            <h5>Удобная оплата</h5>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

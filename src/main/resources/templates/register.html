@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Регистрация - ООО «Белтруфсмак»</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+              <h3 class="mb-0">Регистрация нового пользователя</h3>
+            </div>
+            <div class="card-body">
+              <div
+                th:if="${successMessage}"
+                class="alert alert-success"
+                role="alert"
+                th:text="${successMessage}"
+              ></div>
+              <div
+                th:if="${errorMessage}"
+                class="alert alert-danger"
+                role="alert"
+                th:text="${errorMessage}"
+              ></div>
+
+              <form th:action="@{/register}" th:object="${user}" method="post">
+                <!-- Основная информация -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="username" class="form-label"
+                      >Имя пользователя*</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="username"
+                      th:field="*{username}"
+                      th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('username')}"
+                      th:errors="*{username}"
+                    ></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="email" class="form-label">Email*</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="email"
+                      th:field="*{email}"
+                      th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('email')}"
+                      th:errors="*{email}"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Пароли -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="password" class="form-label">Пароль*</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      th:field="*{password}"
+                      th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('password')}"
+                      th:errors="*{password}"
+                    ></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="confirmPassword" class="form-label"
+                      >Подтверждение пароля*</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="confirmPassword"
+                      th:field="*{confirmPassword}"
+                      th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('confirmPassword')}"
+                      th:errors="*{confirmPassword}"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Личная информация -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="firstName" class="form-label">Имя*</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="firstName"
+                      th:field="*{firstName}"
+                      th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('firstName')}"
+                      th:errors="*{firstName}"
+                    ></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="lastName" class="form-label">Фамилия*</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="lastName"
+                      th:field="*{lastName}"
+                      th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('lastName')}"
+                      th:errors="*{lastName}"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Контактная информация -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="phone" class="form-label">Телефон</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="phone"
+                      th:field="*{phone}"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="address" class="form-label">Адрес</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="address"
+                      th:field="*{address}"
+                    />
+                  </div>
+                </div>
+
+                <!-- Подписка на рассылку -->
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="subscribeToNewsletter"
+                    th:field="*{subscribeToNewsletter}"
+                  />
+                  <label class="form-check-label" for="subscribeToNewsletter">
+                    Подписаться на рассылку новостей и акций
+                  </label>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    Зарегистрироваться
+                  </button>
+                  <a th:href="@{/login}" class="btn btn-outline-secondary"
+                    >Уже есть аккаунт? Войти</a
+                  >
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
