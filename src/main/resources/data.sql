@@ -4,7 +4,7 @@ INSERT INTO roles (name) VALUES ('ROLE_USER') ON CONFLICT (name) DO NOTHING;
 
 -- Добавление администратора (пароль: admin123)
 INSERT INTO users (username, email, password, first_name, last_name, subscribe_to_newsletter, created_at, updated_at)
-VALUES ('admin', 'admin@beltrufsmak.com', '$2a$10$yfIAJvvvRTMPxKx.Fsz.3.h/QcM7VCdHBdq4xKMqXo.JkYq3jTDGK', 'Администратор', 'Системы', true, NOW(), NOW())
+VALUES ('admin', 'admin@beltrufsmak.com', '123123', 'Администратор', 'Системы', true, NOW(), NOW())
 ON CONFLICT (username) DO NOTHING;
 
 -- Связь администратора с ролью админа
