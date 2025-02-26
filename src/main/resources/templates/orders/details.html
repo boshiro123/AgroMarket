@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Детали заказа - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Заказ №<span th:text="${order.id}"></span></h2>
+          <a th:href="@{/orders}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> К списку заказов
+          </a>
+        </div>
+
+        <div class="row">
+          <div class="col-md-8">
+            <!-- Order Items -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Товары в заказе</h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th>Количество</th>
+                        <th>Сумма</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="item : ${order.items}">
+                        <td>
+                          <a
+                            th:href="@{/products/{id}(id=${item.product.id})}"
+                            th:text="${item.product.name}"
+                            class="text-decoration-none"
+                          >
+                          </a>
+                        </td>
+                        <td
+                          th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 2, 'POINT') + ' ₽'}"
+                        ></td>
+                        <td th:text="${item.quantity}"></td>
+                        <td
+                          th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 2, 'POINT') + ' ₽'}"
+                        ></td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="3" class="text-end">
+                          <strong>Итого:</strong>
+                        </td>
+                        <td>
+                          <strong
+                            th:text="${#numbers.formatDecimal(order.totalPrice, 0, 'COMMA', 2, 'POINT') + ' ₽'}"
+                          ></strong>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <!-- Order Info -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Информация о заказе</h5>
+              </div>
+              <div class="card-body">
+                <dl class="row mb-0">
+                  <dt class="col-sm-5">Статус:</dt>
+                  <dd class="col-sm-7">
+                    <span
+                      th:class="${'badge ' + 
+                                        (order.status == 'NEW' ? 'bg-primary' : '') + 
+                                        (order.status == 'PROCESSING' ? 'bg-info' : '') + 
+                                        (order.status == 'SHIPPED' ? 'bg-warning' : '') + 
+                                        (order.status == 'DELIVERED' ? 'bg-success' : '') + 
+                                        (order.status == 'CANCELLED' ? 'bg-danger' : '')}"
+                      th:text="${order.status}"
+                    >
+                    </span>
+                  </dd>
+
+                  <dt class="col-sm-5">Дата заказа:</dt>
+                  <dd
+                    class="col-sm-7"
+                    th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"
+                  ></dd>
+
+                  <dt class="col-sm-5">Способ оплаты:</dt>
+                  <dd class="col-sm-7">
+                    <i
+                      th:class="${order.paymentMethod == 'CARD' ? 'bi bi-credit-card' : 'bi bi-cash'}"
+                    ></i>
+                    <span
+                      th:text="${order.paymentMethod == 'CARD' ? 'Банковская карта' : 'Наличные при получении'}"
+                    ></span>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Информация о доставке</h5>
+              </div>
+              <div class="card-body">
+                <p class="mb-0" th:text="${order.shippingAddress}"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

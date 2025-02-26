@@ -31,6 +31,7 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .requestMatchers("/cart/**").authenticated()
+            .requestMatchers("/orders/**").authenticated()
             .anyRequest().authenticated())
         .formLogin(form -> form
             .loginPage("/login")

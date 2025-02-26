@@ -22,14 +22,12 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
-  private List<OrderItem> orderItems = new ArrayList<>();
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  private List<OrderItem> items = new ArrayList<>();
 
   @Column(nullable = false)
   private BigDecimal totalPrice;
@@ -46,15 +44,29 @@ public class Order {
   @UpdateTimestamp
   private LocalDateTime updatedAt;
 
+  public Order(User user, String status, String shippingAddress, String paymentMethod, BigDecimal totalPrice) {
+    this.user = user;
+    this.status = status;
+    this.shippingAddress = shippingAddress;
+    this.paymentMethod = paymentMethod;
+    this.totalPrice = totalPrice;
+    this.items = new ArrayList<>();
+  }
+
   // Метод для добавления элемента заказа
   public void addOrderItem(OrderItem orderItem) {
-    orderItems.add(orderItem);
+    if (items == null) {
+      items = new ArrayList<>();
+    }
+    items.add(orderItem);
     orderItem.setOrder(this);
   }
 
   // Метод для удаления элемента заказа
   public void removeOrderItem(OrderItem orderItem) {
-    orderItems.remove(orderItem);
-    orderItem.setOrder(null);
+    if (items != null) {
+      items.remove(orderItem);
+      orderItem.setOrder(null);
+    }
   }
 }
