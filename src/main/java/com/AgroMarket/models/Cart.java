@@ -23,13 +23,13 @@ public class Cart {
   private Long id;
 
   @OneToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id")
   private User user;
 
   @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
   @ToString.Exclude
   @EqualsAndHashCode.Exclude
-  private List<CartItem> cartItems = new ArrayList<>();
+  private List<CartItem> items = new ArrayList<>();
 
   @Column(nullable = false)
   private BigDecimal totalPrice;
@@ -42,13 +42,13 @@ public class Cart {
 
   // Метод для добавления элемента корзины
   public void addCartItem(CartItem cartItem) {
-    cartItems.add(cartItem);
+    items.add(cartItem);
     cartItem.setCart(this);
   }
 
   // Метод для удаления элемента корзины
   public void removeCartItem(CartItem cartItem) {
-    cartItems.remove(cartItem);
+    items.remove(cartItem);
     cartItem.setCart(null);
   }
 }

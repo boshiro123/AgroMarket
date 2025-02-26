@@ -22,12 +22,12 @@ public class CartItem {
   private Cart cart;
 
   @ManyToOne
-  @JoinColumn(name = "product_id", nullable = false)
+  @JoinColumn(name = "product_id")
   private Product product;
 
   @Column(nullable = false)
   private Integer quantity;
 
-  @Column(nullable = false)
+  @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal price;
 }

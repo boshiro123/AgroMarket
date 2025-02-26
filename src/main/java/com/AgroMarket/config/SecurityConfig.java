@@ -23,11 +23,14 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
+        .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/cart/**"))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/", "/home", "/register", "/products/**", "/categories/**", "/images/**", "/css/**",
                 "/js/**")
             .permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/cart/**").authenticated()
             .anyRequest().authenticated())
         .formLogin(form -> form
             .loginPage("/login")

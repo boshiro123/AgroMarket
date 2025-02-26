@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Корзина - ООО «Белтруфсмак»</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <h1 class="mb-4">Корзина</h1>
+
+        <div th:if="${cart.items.empty}" class="alert alert-info">
+          Ваша корзина пуста. <a href="/products">Перейти в каталог</a>
+        </div>
+
+        <div th:if="${!cart.items.empty}" class="row">
+          <div class="col-md-8">
+            <!-- Список товаров -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <div
+                  th:each="item : ${cart.items}"
+                  class="row mb-4 align-items-center"
+                >
+                  <div class="col-md-2">
+                    <img
+                      th:if="${item.product.imageUrl}"
+                      th:src="${item.product.imageUrl}"
+                      class="img-fluid"
+                      alt="Изображение продукта"
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <h5 th:text="${item.product.name}">Название продукта</h5>
+                    <p
+                      class="text-muted"
+                      th:text="${item.product.category.name}"
+                    >
+                      Категория
+                    </p>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="input-group">
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        th:onclick="'updateQuantity(' + ${item.id} + ', -1)'"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        class="form-control text-center"
+                        th:value="${item.quantity}"
+                        min="1"
+                        th:onchange="'updateQuantity(' + ${item.id} + ', this.value)'"
+                      />
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        th:onclick="'updateQuantity(' + ${item.id} + ', 1)'"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-2 text-end">
+                    <span
+                      th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 2, 'POINT')}"
+                      >0.00</span
+                    >
+                    руб.
+                  </div>
+                  <div class="col-md-2 text-end">
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      th:onclick="'removeItem(' + ${item.id} + ')'"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Кнопки управления -->
+            <div class="d-flex justify-content-between mb-4">
+              <a href="/products" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Продолжить покупки
+              </a>
+              <button class="btn btn-outline-danger" onclick="clearCart()">
+                <i class="bi bi-trash"></i> Очистить корзину
+              </button>
+            </div>
+          </div>
+
+          <!-- Итого -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Итого</h5>
+                <div class="d-flex justify-content-between mb-3">
+                  <span>Сумма:</span>
+                  <strong
+                    th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 2, 'POINT')}"
+                    >0.00</strong
+                  >
+                </div>
+                <a href="/order/create" class="btn btn-primary w-100">
+                  Оформить заказ
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Скрипты для управления корзиной -->
+      <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+          const csrfToken =
+            document.querySelector('meta[name="_csrf"]')?.content
+          const csrfHeader = document.querySelector(
+            'meta[name="_csrf_header"]'
+          )?.content
+
+          window.updateQuantity = function (itemId, value) {
+            let quantity
+            if (typeof value === "number") {
+              const input = document.querySelector(
+                `input[onchange*="${itemId}"]`
+              )
+              quantity = parseInt(input.value) + value
+              if (quantity < 1) quantity = 1
+              input.value = quantity
+            } else {
+              quantity = parseInt(value)
+              if (quantity < 1) quantity = 1
+            }
+
+            const headers = {
+              "Content-Type": "application/json",
+            }
+
+            if (csrfToken && csrfHeader) {
+              headers[csrfHeader] = csrfToken
+            }
+
+            fetch(`/cart/update/${itemId}?quantity=${quantity}`, {
+              method: "POST",
+              headers: headers,
+            }).then(response => {
+              if (response.ok) {
+                location.reload()
+              } else {
+                alert("Ошибка при обновлении количества")
+              }
+            })
+          }
+
+          window.removeItem = function (itemId) {
+            if (
+              confirm("Вы уверены, что хотите удалить этот товар из корзины?")
+            ) {
+              const headers = {
+                "Content-Type": "application/json",
+              }
+
+              if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken
+              }
+
+              fetch(`/cart/remove/${itemId}`, {
+                method: "POST",
+                headers: headers,
+              }).then(response => {
+                if (response.ok) {
+                  location.reload()
+                } else {
+                  alert("Ошибка при удалении товара")
+                }
+              })
+            }
+          }
+
+          window.clearCart = function () {
+            if (confirm("Вы уверены, что хотите очистить корзину?")) {
+              const headers = {
+                "Content-Type": "application/json",
+              }
+
+              if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken
+              }
+
+              fetch("/cart/clear", {
+                method: "POST",
+                headers: headers,
+              }).then(response => {
+                if (response.ok) {
+                  location.reload()
+                } else {
+                  alert("Ошибка при очистке корзины")
+                }
+              })
+            }
+          }
+        })
+      </script>
+    </main>
+  </body>
+</html>

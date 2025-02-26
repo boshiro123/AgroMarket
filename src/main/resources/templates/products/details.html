@@ -8,10 +8,34 @@
     <title th:text="${product.name + ' - ООО «Белтруфсмак»'}">
       Название продукта
     </title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
   </head>
   <body>
     <main>
       <div class="container">
+        <!-- Toast для уведомлений -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+          <div
+            id="addToCartToast"
+            class="toast"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div class="toast-header bg-success text-white">
+              <strong class="me-auto">Уведомление</strong>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="toast-body">Товар успешно добавлен в корзину</div>
+          </div>
+        </div>
+
         <!-- Навигационные хлебные крошки -->
         <nav aria-label="breadcrumb" class="mb-4">
           <ol class="breadcrumb">
@@ -91,7 +115,8 @@
                 th:if="${#authorization.expression('isAuthenticated()')}"
               >
                 <button
-                  class="btn btn-primary"
+                  id="addToCartBtn"
+                  class="btn btn-primary btn-lg"
                   onclick="addToCart(this)"
                   th:data-product-id="${product.id}"
                 >
@@ -102,7 +127,7 @@
                 class="d-grid gap-2"
                 th:unless="${#authorization.expression('isAuthenticated()')}"
               >
-                <a href="/login" class="btn btn-outline-primary">
+                <a href="/login" class="btn btn-outline-primary btn-lg">
                   Войдите, чтобы добавить в корзину
                 </a>
               </div>
@@ -157,11 +182,23 @@
                       >
                       руб.
                     </p>
-                    <a
-                      th:href="@{/products/{id}(id=${relatedProduct.id})}"
-                      class="btn btn-outline-primary"
-                      >Подробнее</a
+                    <div
+                      class="d-flex justify-content-between align-items-center"
                     >
+                      <a
+                        th:href="@{/products/{id}(id=${relatedProduct.id})}"
+                        class="btn btn-primary"
+                        >Подробнее</a
+                      >
+                      <button
+                        th:if="${#authorization.expression('isAuthenticated()')}"
+                        class="btn btn-success"
+                        onclick="addToCart(this)"
+                        th:data-product-id="${relatedProduct.id}"
+                      >
+                        <i class="bi bi-cart-plus"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -172,28 +209,73 @@
 
       <!-- Скрипт для добавления в корзину -->
       <script th:inline="javascript">
-        function addToCart(button) {
-          const productId = button.getAttribute("data-product-id")
-          fetch(`/cart/add/${productId}`, {
-            method: "POST",
-            headers: {
+        document.addEventListener("DOMContentLoaded", function () {
+          const toast = new bootstrap.Toast(
+            document.getElementById("addToCartToast")
+          )
+          const csrfToken =
+            document.querySelector('meta[name="_csrf"]')?.content
+          const csrfHeader = document.querySelector(
+            'meta[name="_csrf_header"]'
+          )?.content
+
+          // Делаем функцию addToCart глобальной
+          window.addToCart = function (button) {
+            const productId = button.getAttribute("data-product-id")
+            const isMainButton = button.id === "addToCartBtn"
+            button.disabled = true
+
+            const headers = {
               "Content-Type": "application/json",
-              "X-CSRF-TOKEN":
-                document.querySelector('meta[name="_csrf"]').content,
-            },
-          })
-            .then(response => {
-              if (response.ok) {
-                alert("Товар добавлен в корзину")
-              } else {
-                alert("Ошибка при добавлении товара в корзину")
-              }
+            }
+
+            if (csrfToken && csrfHeader) {
+              headers[csrfHeader] = csrfToken
+            }
+
+            fetch(`/cart/add/${productId}`, {
+              method: "POST",
+              headers: headers,
             })
-            .catch(error => {
-              console.error("Ошибка:", error)
-              alert("Произошла ошибка при добавлении товара в корзину")
-            })
-        }
+              .then(response => {
+                if (response.ok) {
+                  toast.show()
+                  // Разная анимация для главной кнопки и кнопок похожих товаров
+                  if (isMainButton) {
+                    button.innerHTML =
+                      '<i class="bi bi-check-lg"></i> Добавлено в корзину'
+                    button.classList.remove("btn-primary")
+                    button.classList.add("btn-success")
+                    setTimeout(() => {
+                      button.innerHTML =
+                        '<i class="bi bi-cart-plus"></i> Добавить в корзину'
+                      button.classList.remove("btn-success")
+                      button.classList.add("btn-primary")
+                      button.disabled = false
+                    }, 2000)
+                  } else {
+                    button.innerHTML = '<i class="bi bi-check"></i>'
+                    button.classList.remove("btn-success")
+                    button.classList.add("btn-outline-success")
+                    setTimeout(() => {
+                      button.innerHTML = '<i class="bi bi-cart-plus"></i>'
+                      button.classList.remove("btn-outline-success")
+                      button.classList.add("btn-success")
+                      button.disabled = false
+                    }, 2000)
+                  }
+                } else {
+                  alert("Ошибка при добавлении товара в корзину")
+                  button.disabled = false
+                }
+              })
+              .catch(error => {
+                console.error("Ошибка:", error)
+                alert("Произошла ошибка при добавлении товара в корзину")
+                button.disabled = false
+              })
+          }
+        })
       </script>
     </main>
   </body>
