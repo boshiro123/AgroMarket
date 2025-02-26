@@ -46,6 +46,16 @@ public class ProductController {
     return "products/catalog";
   }
 
+  @GetMapping("/{id}")
+  public String showProductDetails(@PathVariable Long id, Model model) {
+    Product product = productService.findById(id);
+    model.addAttribute("product", product);
+    model.addAttribute("category", product.getCategory());
+    model.addAttribute("relatedProducts",
+        productService.findRelatedProducts(product.getCategory().getId(), id, 3));
+    return "products/details";
+  }
+
   @PostMapping("/{id}/image")
   public String uploadImage(@PathVariable Long id, @RequestParam("image") MultipartFile file) throws IOException {
     Product product = productService.findById(id);

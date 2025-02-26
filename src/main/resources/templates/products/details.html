@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title th:text="${product.name + ' - ООО «Белтруфсмак»'}">
+      Название продукта
+    </title>
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <!-- Навигационные хлебные крошки -->
+        <nav aria-label="breadcrumb" class="mb-4">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item"><a href="/products">Каталог</a></li>
+            <li class="breadcrumb-item">
+              <a
+                th:href="@{/products(categoryId=${category.id})}"
+                th:text="${category.name}"
+                >Категория</a
+              >
+            </li>
+            <li
+              class="breadcrumb-item active"
+              aria-current="page"
+              th:text="${product.name}"
+            >
+              Продукт
+            </li>
+          </ol>
+        </nav>
+
+        <div class="row">
+          <!-- Изображение продукта -->
+          <div class="col-md-6 mb-4">
+            <div class="card">
+              <img
+                th:if="${product.imageUrl}"
+                th:src="${product.imageUrl}"
+                class="card-img-top"
+                alt="Изображение продукта"
+                style="max-height: 400px; object-fit: contain; padding: 20px"
+              />
+              <div class="card-body" sec:authorize="hasRole('ADMIN')">
+                <form
+                  th:action="@{/products/{id}/image(id=${product.id})}"
+                  method="post"
+                  enctype="multipart/form-data"
+                >
+                  <div class="mb-3">
+                    <label for="image" class="form-label"
+                      >Изменить изображение</label
+                    >
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="image"
+                      name="image"
+                      accept="image/*"
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    Загрузить
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Информация о продукте -->
+          <div class="col-md-6">
+            <h1 class="mb-3" th:text="${product.name}">Название продукта</h1>
+            <div class="mb-4">
+              <h4 class="text-primary mb-3">
+                <span
+                  th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}"
+                  >0.00</span
+                >
+                руб.
+              </h4>
+              <p class="text-muted mb-4" th:text="${product.description}">
+                Описание продукта
+              </p>
+
+              <div
+                class="d-grid gap-2"
+                th:if="${#authorization.expression('isAuthenticated()')}"
+              >
+                <button
+                  class="btn btn-primary"
+                  onclick="addToCart(this)"
+                  th:data-product-id="${product.id}"
+                >
+                  <i class="bi bi-cart-plus"></i> Добавить в корзину
+                </button>
+              </div>
+              <div
+                class="d-grid gap-2"
+                th:unless="${#authorization.expression('isAuthenticated()')}"
+              >
+                <a href="/login" class="btn btn-outline-primary">
+                  Войдите, чтобы добавить в корзину
+                </a>
+              </div>
+            </div>
+
+            <!-- Характеристики -->
+            <div class="mb-4">
+              <h4>Характеристики</h4>
+              <table class="table">
+                <tbody>
+                  <tr>
+                    <th scope="row">Категория</th>
+                    <td th:text="${category.name}">Категория</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Артикул</th>
+                    <td th:text="${product.id}">ID</td>
+                  </tr>
+                  <!-- Здесь можно добавить дополнительные характеристики -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Похожие продукты -->
+        <div class="row mt-5">
+          <div class="col">
+            <h3 class="mb-4">Похожая техника</h3>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+              <div class="col" th:each="relatedProduct : ${relatedProducts}">
+                <div class="card h-100">
+                  <img
+                    th:if="${relatedProduct.imageUrl}"
+                    th:src="${relatedProduct.imageUrl}"
+                    class="card-img-top"
+                    alt="Изображение продукта"
+                    style="
+                      max-height: 200px;
+                      object-fit: contain;
+                      padding: 10px;
+                    "
+                  />
+                  <div class="card-body">
+                    <h5 class="card-title" th:text="${relatedProduct.name}">
+                      Название продукта
+                    </h5>
+                    <p class="card-text">
+                      <span
+                        th:text="${#numbers.formatDecimal(relatedProduct.price, 0, 'COMMA', 2, 'POINT')}"
+                        >0.00</span
+                      >
+                      руб.
+                    </p>
+                    <a
+                      th:href="@{/products/{id}(id=${relatedProduct.id})}"
+                      class="btn btn-outline-primary"
+                      >Подробнее</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Скрипт для добавления в корзину -->
+      <script th:inline="javascript">
+        function addToCart(button) {
+          const productId = button.getAttribute("data-product-id")
+          fetch(`/cart/add/${productId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN":
+                document.querySelector('meta[name="_csrf"]').content,
+            },
+          })
+            .then(response => {
+              if (response.ok) {
+                alert("Товар добавлен в корзину")
+              } else {
+                alert("Ошибка при добавлении товара в корзину")
+              }
+            })
+            .catch(error => {
+              console.error("Ошибка:", error)
+              alert("Произошла ошибка при добавлении товара в корзину")
+            })
+        }
+      </script>
+    </main>
+  </body>
+</html>
