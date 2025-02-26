@@ -9,4 +9,10 @@ public interface UserService {
   boolean isUsernameExists(String username);
 
   boolean isEmailExists(String email);
+
+  User findByUsername(String username);
+
+  void updateProfile(String username, String firstName, String lastName, String email, String phone);
+
+  void changePassword(String username, String currentPassword, String newPassword, String confirmPassword);
 }

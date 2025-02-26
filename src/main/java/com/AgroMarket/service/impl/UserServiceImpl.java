@@ -10,6 +10,8 @@ import com.AgroMarket.repository.UserRepository;
 import com.AgroMarket.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -79,6 +81,55 @@ public class UserServiceImpl implements UserService {
   @Override
   public boolean isEmailExists(String email) {
     return userRepository.existsByEmail(email);
+  }
+
+  @Override
+  public User findByUsername(String username) {
+    return userRepository.findByUsername(username)
+        .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
+  }
+
+  @Override
+  @Transactional
+  public void updateProfile(String username, String firstName, String lastName, String email, String phone) {
+    User user = findByUsername(username);
+
+    // Проверяем, не занят ли email другим пользователем
+    if (!user.getEmail().equals(email) && userRepository.findByEmail(email).isPresent()) {
+      throw new IllegalStateException("Email уже используется другим пользователем");
+    }
+
+    user.setFirstName(firstName);
+    user.setLastName(lastName);
+    user.setEmail(email);
+    user.setPhone(phone);
+
+    userRepository.save(user);
+  }
+
+  @Override
+  @Transactional
+  public void changePassword(String username, String currentPassword, String newPassword, String confirmPassword) {
+    User user = findByUsername(username);
+
+    // Проверяем текущий пароль
+    if (!(user.getPassword().equals(currentPassword))) {
+      throw new IllegalStateException("Неверный текущий пароль");
+    }
+
+    // Проверяем совпадение паролей
+    if (!newPassword.equals(confirmPassword)) {
+      throw new IllegalStateException("Пароли не совпадают");
+    }
+
+    // Проверяем сложность пароля
+    if (newPassword.length() < 6) {
+      throw new IllegalStateException("Пароль должен содержать не менее 6 символов");
+    }
+
+    // Обновляем пароль
+    user.setPassword(newPassword);
+    userRepository.save(user);
   }
 
 }
