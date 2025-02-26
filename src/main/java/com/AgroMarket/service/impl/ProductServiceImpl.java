@@ -47,4 +47,22 @@ public class ProductServiceImpl implements ProductService {
   public List<Product> findRelatedProducts(Long categoryId, Long excludeProductId, int limit) {
     return productRepository.findRelatedProducts(categoryId, excludeProductId, limit);
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<Product> findByCategoryId(Long categoryId, Pageable pageable) {
+    return productRepository.findByCategoryId(categoryId, pageable);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public long countProducts() {
+    return productRepository.count();
+  }
+
+  @Override
+  @Transactional
+  public void delete(Long id) {
+    productRepository.deleteById(id);
+  }
 }

@@ -11,8 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/products")
@@ -71,5 +73,50 @@ public class ProductController {
     productService.save(product);
 
     return "redirect:/products/" + id;
+  }
+
+  @GetMapping("/{id}/edit")
+  public String editProductForm(@PathVariable Long id, Model model) {
+    Product product = productService.findById(id);
+    model.addAttribute("product", product);
+    model.addAttribute("categories", categoryService.findAll());
+    return "products/edit";
+  }
+
+  @PostMapping("/{id}/edit")
+  public String updateProduct(
+      @PathVariable Long id,
+      @RequestParam String name,
+      @RequestParam String description,
+      @RequestParam BigDecimal price,
+      @RequestParam int quantity,
+      @RequestParam Long categoryId,
+      @RequestParam(required = false) MultipartFile image,
+      RedirectAttributes redirectAttributes) {
+    try {
+      Product product = productService.findById(id);
+      product.setName(name);
+      product.setDescription(description);
+      product.setPrice(price);
+      product.setQuantity(quantity);
+      product.setCategory(categoryService.findById(categoryId));
+
+      if (image != null && !image.isEmpty()) {
+        // Удаляем старое изображение, если оно есть
+        if (product.getImageUrl() != null) {
+          fileStorageService.deleteFile(product.getImageUrl());
+        }
+        // Сохраняем новое изображение
+        String imageUrl = fileStorageService.saveFile(image);
+        product.setImageUrl(imageUrl);
+      }
+
+      productService.save(product);
+      redirectAttributes.addFlashAttribute("successMessage", "Товар успешно обновлен");
+      return "redirect:/admin/products";
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при обновлении товара: " + e.getMessage());
+      return "redirect:/products/" + id + "/edit";
+    }
   }
 }

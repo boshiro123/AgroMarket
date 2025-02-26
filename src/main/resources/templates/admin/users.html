@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/admin :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Пользователи - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container-fluid px-4 py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1 class="mb-0">Пользователи</h1>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Имя пользователя</th>
+                    <th>Email</th>
+                    <th>Имя</th>
+                    <th>Фамилия</th>
+                    <th>Телефон</th>
+                    <th>Роли</th>
+                    <th>Дата регистрации</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="user : ${users}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.username}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.firstName}"></td>
+                    <td th:text="${user.lastName}"></td>
+                    <td th:text="${user.phone}"></td>
+                    <td>
+                      <span
+                        th:each="role : ${user.roles}"
+                        th:text="${role.name.replace('ROLE_', '')}"
+                        class="badge bg-secondary me-1"
+                      >
+                      </span>
+                    </td>
+                    <td
+                      th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}"
+                    ></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Пагинация -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+              <ul class="pagination justify-content-center">
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == 0 ? 'disabled' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/users(page=${currentPage - 1})}"
+                    tabindex="-1"
+                  >
+                    <i class="bi bi-chevron-left"></i>
+                  </a>
+                </li>
+
+                <li
+                  class="page-item"
+                  th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                  th:classappend="${currentPage == i ? 'active' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/users(page=${i})}"
+                    th:text="${i + 1}"
+                  ></a>
+                </li>
+
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/admin/users(page=${currentPage + 1})}"
+                  >
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

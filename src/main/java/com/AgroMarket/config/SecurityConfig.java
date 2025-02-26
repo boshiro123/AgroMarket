@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -24,7 +25,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/cart/**"))
+            .ignoringRequestMatchers("/cart/**", "/admin/orders/*/status", "/admin/products/*"))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/", "/home", "/register", "/products/**", "/categories/**", "/images/**", "/css/**",
                 "/js/**")
@@ -35,13 +36,25 @@ public class SecurityConfig {
             .anyRequest().authenticated())
         .formLogin(form -> form
             .loginPage("/login")
-            .defaultSuccessUrl("/", true)
+            .successHandler(authenticationSuccessHandler())
             .permitAll())
         .logout(logout -> logout
             .logoutSuccessUrl("/")
             .permitAll());
 
     return http.build();
+  }
+
+  @Bean
+  public AuthenticationSuccessHandler authenticationSuccessHandler() {
+    return (request, response, authentication) -> {
+      if (authentication.getAuthorities().stream()
+          .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        response.sendRedirect("/admin");
+      } else {
+        response.sendRedirect("/");
+      }
+    };
   }
 
   @Bean

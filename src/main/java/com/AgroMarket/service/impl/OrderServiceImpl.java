@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // Создаем новый заказ
-    final Order order = new Order(cart.getUser(), "PENDING", shippingAddress, paymentMethod,
+    final Order order = new Order(cart.getUser(), "NEW", shippingAddress, paymentMethod,
         cartService.calculateTotal(cart));
 
     // Переносим товары из корзины в заказ
@@ -72,5 +73,26 @@ public class OrderServiceImpl implements OrderService {
     Order order = findById(orderId);
     order.setStatus(status);
     orderRepository.save(order);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<Order> findAll(Pageable pageable) {
+    return orderRepository.findAll(pageable);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public long countOrders() {
+    return orderRepository.count();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public BigDecimal calculateTotalRevenue() {
+    return orderRepository.findAll().stream()
+        .filter(order -> !order.getStatus().equals("CANCELLED"))
+        .map(Order::getTotalPrice)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 }

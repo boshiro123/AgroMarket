@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/admin :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Детали заказа - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container-fluid px-4 py-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="/admin">Панель управления</a>
+            </li>
+            <li class="breadcrumb-item"><a href="/admin/orders">Заказы</a></li>
+            <li class="breadcrumb-item active">
+              Заказ №<span th:text="${order.id}"></span>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="row">
+          <!-- Информация о заказе -->
+          <div class="col-md-8">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Детали заказа</h5>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <p>
+                      <strong>Номер заказа:</strong>
+                      <span th:text="${order.id}"></span>
+                    </p>
+                    <p>
+                      <strong>Дата заказа:</strong>
+                      <span
+                        th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"
+                      ></span>
+                    </p>
+                    <p>
+                      <strong>Статус:</strong>
+                      <span
+                        th:class="${'badge ' + 
+                      (order.status == 'NEW' ? 'bg-primary' : '') +
+                      (order.status == 'PROCESSING' ? 'bg-warning' : '') +
+                      (order.status == 'SHIPPED' ? 'bg-info' : '') +
+                      (order.status == 'DELIVERED' ? 'bg-success' : '') +
+                      (order.status == 'CANCELLED' ? 'bg-danger' : '')}"
+                        th:text="${order.status}"
+                      >
+                      </span>
+                    </p>
+                  </div>
+                  <div class="col-md-6">
+                    <p>
+                      <strong>Способ оплаты:</strong>
+                      <span th:text="${order.paymentMethod}"></span>
+                    </p>
+                    <p>
+                      <strong>Адрес доставки:</strong>
+                      <span th:text="${order.shippingAddress}"></span>
+                    </p>
+                    <p>
+                      <strong>Сумма заказа:</strong>
+                      <span
+                        th:text="${#numbers.formatDecimal(order.totalPrice, 1, 2) + ' руб.'}"
+                      ></span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Товары в заказе -->
+                <h6 class="mb-3">Товары в заказе</h6>
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th>Количество</th>
+                        <th>Сумма</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="item : ${order.items}">
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <img
+                              th:if="${item.product.imageUrl}"
+                              th:src="${item.product.imageUrl}"
+                              class="me-2"
+                              style="
+                                width: 50px;
+                                height: 50px;
+                                object-fit: cover;
+                              "
+                            />
+                            <span th:text="${item.product.name}"></span>
+                          </div>
+                        </td>
+                        <td
+                          th:text="${#numbers.formatDecimal(item.price, 1, 2) + ' руб.'}"
+                        ></td>
+                        <td th:text="${item.quantity}"></td>
+                        <td
+                          th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2) + ' руб.'}"
+                        ></td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="3" class="text-end">
+                          <strong>Итого:</strong>
+                        </td>
+                        <td>
+                          <strong
+                            th:text="${#numbers.formatDecimal(order.totalPrice, 1, 2) + ' руб.'}"
+                          ></strong>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Информация о покупателе -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Информация о покупателе</h5>
+              </div>
+              <div class="card-body">
+                <p>
+                  <strong>Имя пользователя:</strong>
+                  <span th:text="${order.user.username}"></span>
+                </p>
+                <p>
+                  <strong>Email:</strong>
+                  <span th:text="${order.user.email}"></span>
+                </p>
+                <p>
+                  <strong>Имя:</strong>
+                  <span th:text="${order.user.firstName}"></span>
+                </p>
+                <p>
+                  <strong>Фамилия:</strong>
+                  <span th:text="${order.user.lastName}"></span>
+                </p>
+                <p>
+                  <strong>Телефон:</strong>
+                  <span th:text="${order.user.phone}"></span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Управление статусом -->
+            <div
+              class="card mt-4"
+              th:if="${order.status != 'DELIVERED' && order.status != 'CANCELLED'}"
+            >
+              <div class="card-header">
+                <h5 class="mb-0">Управление статусом</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <button
+                    class="btn btn-success"
+                    th:if="${order.status == 'NEW'}"
+                    th:onclick="'updateOrderStatus(' + ${order.id} + ', \'PROCESSING\')'"
+                  >
+                    Принять в обработку
+                  </button>
+                  <button
+                    class="btn btn-info"
+                    th:if="${order.status == 'PROCESSING'}"
+                    th:onclick="'updateOrderStatus(' + ${order.id} + ', \'SHIPPED\')'"
+                  >
+                    Отправить
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    th:if="${order.status == 'SHIPPED'}"
+                    th:onclick="'updateOrderStatus(' + ${order.id} + ', \'DELIVERED\')'"
+                  >
+                    Подтвердить доставку
+                  </button>
+                  <button
+                    class="btn btn-danger"
+                    th:onclick="'updateOrderStatus(' + ${order.id} + ', \'CANCELLED\')'"
+                  >
+                    Отменить заказ
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JavaScript для обновления статуса -->
+      <script th:inline="javascript">
+        function updateOrderStatus(orderId, newStatus) {
+          if (!confirm("Вы уверены, что хотите изменить статус заказа?")) {
+            return
+          }
+
+          const token = document.querySelector('meta[name="_csrf"]').content
+          const header = document.querySelector(
+            'meta[name="_csrf_header"]'
+          ).content
+
+          fetch(`/admin/orders/${orderId}/status?status=${newStatus}`, {
+            method: "POST",
+            headers: {
+              [header]: token,
+            },
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Ошибка при обновлении статуса")
+              }
+              location.reload()
+            })
+            .catch(error => {
+              alert(error.message)
+            })
+        }
+      </script>
+    </main>
+  </body>
+</html>

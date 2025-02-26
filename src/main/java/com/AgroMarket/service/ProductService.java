@@ -16,4 +16,10 @@ public interface ProductService {
   Product save(Product product);
 
   List<Product> findRelatedProducts(Long categoryId, Long excludeProductId, int limit);
+
+  Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+
+  long countProducts();
+
+  void delete(Long id);
 }

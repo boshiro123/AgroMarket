@@ -8,10 +8,11 @@ import com.AgroMarket.models.User;
 import com.AgroMarket.repository.RoleRepository;
 import com.AgroMarket.repository.UserRepository;
 import com.AgroMarket.service.UserService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -130,6 +131,18 @@ public class UserServiceImpl implements UserService {
     // Обновляем пароль
     user.setPassword(newPassword);
     userRepository.save(user);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<User> findAll(Pageable pageable) {
+    return userRepository.findAll(pageable);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public long countUsers() {
+    return userRepository.count();
   }
 
 }

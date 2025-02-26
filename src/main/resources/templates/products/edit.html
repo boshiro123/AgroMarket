@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Редактирование товара - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container py-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item">
+              <a href="/admin/products">Управление товарами</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              Редактирование товара
+            </li>
+          </ol>
+        </nav>
+
+        <div class="row">
+          <div class="col-md-8 mx-auto">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="mb-0">Редактирование товара</h4>
+              </div>
+              <div class="card-body">
+                <!-- Сообщения об ошибках -->
+                <div
+                  th:if="${errorMessage}"
+                  class="alert alert-danger"
+                  role="alert"
+                  th:text="${errorMessage}"
+                ></div>
+
+                <form
+                  th:action="@{/products/{id}/edit(id=${product.id})}"
+                  method="post"
+                  enctype="multipart/form-data"
+                >
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Название</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      name="name"
+                      th:value="${product.name}"
+                      required
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="category" class="form-label">Категория</label>
+                    <select
+                      class="form-select"
+                      id="category"
+                      name="categoryId"
+                      required
+                    >
+                      <option value="">Выберите категорию</option>
+                      <option
+                        th:each="category : ${categories}"
+                        th:value="${category.id}"
+                        th:text="${category.name}"
+                        th:selected="${category.id == product.category.id}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Описание</label>
+                    <textarea
+                      class="form-control"
+                      id="description"
+                      name="description"
+                      rows="3"
+                      required
+                      th:text="${product.description}"
+                    ></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="price" class="form-label">Цена</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="price"
+                      name="price"
+                      step="0.01"
+                      min="0"
+                      th:value="${product.price}"
+                      required
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="quantity" class="form-label">Количество</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="quantity"
+                      name="quantity"
+                      min="0"
+                      th:value="${product.quantity}"
+                      required
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="image" class="form-label">Изображение</label>
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="image"
+                      name="image"
+                      accept="image/*"
+                    />
+                    <div class="form-text">
+                      Оставьте пустым, чтобы сохранить текущее изображение
+                    </div>
+                    <div class="mt-2" th:if="${product.imageUrl}">
+                      <img
+                        th:src="${product.imageUrl}"
+                        alt="Текущее изображение"
+                        style="max-height: 100px"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-between">
+                    <a href="/admin/products" class="btn btn-secondary"
+                      >Отмена</a
+                    >
+                    <button type="submit" class="btn btn-primary">
+                      Сохранить изменения
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
