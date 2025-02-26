@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Каталог техники - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <h1 class="mb-4">Каталог сельхозтехники</h1>
+
+        <!-- Фильтры -->
+        <div class="row mb-4">
+          <div class="col">
+            <div class="btn-group">
+              <a
+                href="/products"
+                class="btn btn-outline-primary"
+                th:classappend="${categoryId == null ? 'active' : ''}"
+              >
+                Все категории
+              </a>
+              <a
+                th:each="category : ${categories}"
+                th:href="@{/products(categoryId=${category.id})}"
+                class="btn btn-outline-primary"
+                th:classappend="${categoryId != null and categoryId == category.id ? 'active' : ''}"
+              >
+                [[${category.name}]]
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Список продуктов -->
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <div class="col" th:each="product : ${products}">
+            <div class="card h-100">
+              <!-- Debug info -->
+              <div
+                class="card-header"
+                th:if="${product.imageUrl != null}"
+              ></div>
+              <img
+                th:if="${product.imageUrl}"
+                th:src="@{${product.imageUrl}}"
+                class="card-img-top"
+                alt="Изображение продукта"
+                style="max-height: 200px; object-fit: contain; padding: 10px"
+              />
+              <div class="card-body">
+                <h5 class="card-title" th:text="${product.name}">
+                  Название продукта
+                </h5>
+                <p class="card-text" th:text="${product.description}">
+                  Описание продукта
+                </p>
+                <p class="card-text">
+                  <strong>Цена: </strong>
+                  <span
+                    th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')}"
+                    >0.00</span
+                  >
+                  руб.
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <a
+                    th:href="@{/products/{id}(id=${product.id})}"
+                    class="btn btn-primary"
+                    >Подробнее</a
+                  >
+                  <button
+                    th:if="${#authorization.expression('isAuthenticated()')}"
+                    class="btn btn-success"
+                    onclick="addToCart(this)"
+                    th:data-product-id="${product.id}"
+                  >
+                    В корзину
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Пагинация -->
+        <div class="row mt-4" th:if="${totalPages > 1}">
+          <div class="col">
+            <nav>
+              <ul class="pagination justify-content-center">
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == 0 ? 'disabled' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/products(page=${currentPage - 1}, categoryId=${categoryId})}"
+                    >Предыдущая</a
+                  >
+                </li>
+                <li
+                  class="page-item"
+                  th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                  th:classappend="${pageNum == currentPage ? 'active' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/products(page=${pageNum}, categoryId=${categoryId})}"
+                    th:text="${pageNum + 1}"
+                    >1</a
+                  >
+                </li>
+                <li
+                  class="page-item"
+                  th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}"
+                >
+                  <a
+                    class="page-link"
+                    th:href="@{/products(page=${currentPage + 1}, categoryId=${categoryId})}"
+                    >Следующая</a
+                  >
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- Скрипт для добавления в корзину -->
+      <script th:inline="javascript">
+        function addToCart(button) {
+          const productId = button.getAttribute("data-product-id")
+          fetch(`/cart/add/${productId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN":
+                document.querySelector('meta[name="_csrf"]').content,
+            },
+          })
+            .then(response => {
+              if (response.ok) {
+                alert("Товар добавлен в корзину")
+              } else {
+                alert("Ошибка при добавлении товара в корзину")
+              }
+            })
+            .catch(error => {
+              console.error("Ошибка:", error)
+              alert("Произошла ошибка при добавлении товара в корзину")
+            })
+        }
+      </script>
+    </main>
+  </body>
+</html>

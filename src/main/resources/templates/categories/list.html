@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="~{layout/main :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Категории - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <div class="row mb-4">
+          <div class="col">
+            <h1>Категории техники</h1>
+          </div>
+          <div class="col-auto" sec:authorize="hasRole('ADMIN')">
+            <button
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#addCategoryModal"
+            >
+              <i class="bi bi-plus-circle"></i> Добавить категорию
+            </button>
+          </div>
+        </div>
+
+        <!-- Список категорий -->
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <div class="col" th:each="category : ${categories}">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title" th:text="${category.name}">
+                  Название категории
+                </h5>
+                <p class="card-text" th:text="${category.description}">
+                  Описание категории
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <a
+                    th:href="@{/products(categoryId=${category.id})}"
+                    class="btn btn-primary"
+                  >
+                    Просмотреть технику
+                  </a>
+                  <div class="btn-group" sec:authorize="hasRole('ADMIN')">
+                    <a
+                      th:href="@{/categories/{id}/edit(id=${category.id})}"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button
+                      class="btn btn-outline-danger"
+                      th:onclick="'deleteCategory(' + ${category.id} + ')'"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно добавления категории -->
+        <div class="modal fade" id="addCategoryModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form
+                th:action="@{/categories}"
+                method="post"
+                th:object="${newCategory}"
+              >
+                <div class="modal-header">
+                  <h5 class="modal-title">Добавить категорию</h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                  ></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Название</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      th:field="*{name}"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Описание</label>
+                    <textarea
+                      class="form-control"
+                      id="description"
+                      th:field="*{description}"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                  >
+                    Отмена
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Сохранить
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Форма для удаления категории -->
+        <form id="deleteCategoryForm" method="post" style="display: none">
+          <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+        </form>
+
+        <!-- Скрипт для удаления категории -->
+        <script th:inline="javascript">
+          function deleteCategory(categoryId) {
+            if (confirm("Вы уверены, что хотите удалить эту категорию?")) {
+              const form = document.getElementById("deleteCategoryForm")
+              form.action = "/categories/" + categoryId + "/delete"
+              form.submit()
+            }
+          }
+        </script>
+      </div>
+    </main>
+  </body>
+</html>
