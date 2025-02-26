@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/admin :: layout(~{::title}, ~{::main})}"
+>
+  <head>
+    <title>Рассылка - ООО «Белтруфсмак»</title>
+  </head>
+  <body>
+    <main>
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1 class="h3 mb-0">Рассылка</h1>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div
+                  th:if="${successMessage}"
+                  class="alert alert-success"
+                  role="alert"
+                >
+                  <span th:text="${successMessage}"></span>
+                </div>
+                <div
+                  th:if="${errorMessage}"
+                  class="alert alert-danger"
+                  role="alert"
+                >
+                  <span th:text="${errorMessage}"></span>
+                </div>
+
+                <form th:action="@{/admin/newsletter/send}" method="post">
+                  <div class="mb-3">
+                    <label for="subject" class="form-label">Тема письма</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="subject"
+                      name="subject"
+                      placeholder="Введите тему письма"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="text" class="form-label">Текст письма</label>
+                    <textarea
+                      class="form-control"
+                      id="text"
+                      name="text"
+                      rows="10"
+                      placeholder="Введите текст письма"
+                      required
+                    ></textarea>
+                    <div class="form-text">
+                      Письмо будет отправлено всем пользователям, которые
+                      подписались на рассылку.
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-send me-2"></i>
+                      Отправить рассылку
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
