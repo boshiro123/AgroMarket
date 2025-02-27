@@ -13,5 +13,6 @@ public interface UserMapper {
   @Mapping(target = "roles", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
+  @Mapping(target = "subscribeToNewsletter", constant = "false")
   User toUser(UserRegistrationDto registrationDto);
 }

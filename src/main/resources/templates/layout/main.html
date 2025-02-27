@@ -7,13 +7,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title th:replace="${title}">ООО «Белтруфсмак»</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
       rel="stylesheet"
     />
   </head>
@@ -27,6 +29,9 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -36,59 +41,124 @@
               <a class="nav-link" href="/products">Каталог</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/categories">Категории</a>
+              <button
+                class="btn btn-warning nav-link text-dark fw-bold ms-2"
+                data-bs-toggle="modal"
+                data-bs-target="#newsletterModal"
+              >
+                <i class="bi bi-tag-fill me-1"></i>Акционные предложения
+              </button>
             </li>
           </ul>
           <ul class="navbar-nav">
-            <!-- Для неавторизованных пользователей -->
-            <li class="nav-item" sec:authorize="!isAuthenticated()">
-              <a class="nav-link" href="/login">Войти</a>
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+              <a class="nav-link" href="/admin">
+                <i class="bi bi-gear"></i> Админ панель
+              </a>
             </li>
-            <li class="nav-item" sec:authorize="!isAuthenticated()">
-              <a class="nav-link" href="/register">Регистрация</a>
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+              <a class="nav-link" href="/profile">
+                <i class="bi bi-person"></i> Профиль
+              </a>
             </li>
-            <!-- Для авторизованных пользователей -->
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+              <a class="nav-link" href="/orders">
+                <i class="bi bi-box"></i> Заказы
+              </a>
+            </li>
             <li class="nav-item" sec:authorize="isAuthenticated()">
               <a class="nav-link" href="/cart">
                 <i class="bi bi-cart"></i> Корзина
               </a>
             </li>
-            <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-              >
-                <span sec:authentication="name">Пользователь</span>
+            <li class="nav-item" sec:authorize="!isAuthenticated()">
+              <a class="nav-link" href="/login">
+                <i class="bi bi-box-arrow-in-right"></i> Войти
               </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/profile">Профиль</a></li>
-                <li><a class="dropdown-item" href="/orders">Мои заказы</a></li>
-                <li sec:authorize="hasRole('ADMIN')">
-                  <a class="dropdown-item" href="/admin">Админ панель</a>
-                </li>
-                <li>
-                  <hr class="dropdown-divider" />
-                </li>
-                <li>
-                  <form
-                    th:action="@{/logout}"
-                    method="post"
-                    class="dropdown-item"
-                  >
-                    <button type="submit" class="btn btn-link p-0">
-                      Выйти
-                    </button>
-                  </form>
-                </li>
-              </ul>
+            </li>
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+              <form th:action="@{/logout}" method="post" class="d-inline">
+                <button class="nav-link bg-transparent border-0" type="submit">
+                  <i class="bi bi-box-arrow-right"></i> Выйти
+                </button>
+              </form>
             </li>
           </ul>
         </div>
       </div>
     </nav>
+
+    <!-- Модальное окно подписки на рассылку -->
+    <div
+      class="modal fade"
+      id="newsletterModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Акционные предложения</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-success d-none" id="subscribeSuccess">
+              Вы успешно подписались на рассылку!
+            </div>
+            <div class="alert alert-success d-none" id="unsubscribeSuccess">
+              Вы успешно отписались от рассылки.
+            </div>
+            <div class="alert alert-danger d-none" id="subscribeError">
+              Произошла ошибка. Попробуйте позже.
+            </div>
+
+            <!-- Форма для неподписанных пользователей -->
+            <div id="subscribeBlock">
+              <p class="mb-3">
+                Подпишитесь на рассылку, чтобы получать информацию о новых
+                акциях и специальных предложениях!
+              </p>
+              <form id="subscribeForm">
+                <div class="mb-3">
+                  <label for="subscribeEmail" class="form-label"
+                    >Email для получения акционных предложений</label
+                  >
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="subscribeEmail"
+                    required
+                  />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Подписаться
+                </button>
+              </form>
+            </div>
+
+            <!-- Блок для подписанных пользователей -->
+            <div id="unsubscribeBlock" class="d-none">
+              <p class="mb-3">
+                Вы уже подписаны на рассылку акционных предложений с адреса
+                <span id="subscribedEmail" class="fw-bold"></span>
+              </p>
+              <button
+                type="button"
+                class="btn btn-danger"
+                onclick="unsubscribe()"
+              >
+                Отписаться от рассылки
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Основной контент -->
     <main class="container my-4">
@@ -114,6 +184,145 @@
       </div>
     </footer>
 
+    <!-- Скрипты -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Скрипт для подписки на рассылку -->
+    <script th:inline="javascript">
+      document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("newsletterModal")
+        const subscribeBlock = document.getElementById("subscribeBlock")
+        const unsubscribeBlock = document.getElementById("unsubscribeBlock")
+        const subscribeForm = document.getElementById("subscribeForm")
+        const successAlert = document.getElementById("subscribeSuccess")
+        const unsubscribeSuccess = document.getElementById("unsubscribeSuccess")
+        const errorAlert = document.getElementById("subscribeError")
+        let currentEmail = null
+
+        // Получаем CSRF токены
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content
+        const csrfHeader = document.querySelector(
+          'meta[name="_csrf_header"]'
+        ).content
+
+        // Проверяем статус подписки при открытии модального окна
+        modal.addEventListener("show.bs.modal", function () {
+          const email = document.getElementById("subscribeEmail").value
+          checkSubscriptionStatus(email)
+        })
+
+        // Функция проверки статуса подписки
+        function checkSubscriptionStatus(email) {
+          if (!email) {
+            subscribeBlock.classList.remove("d-none")
+            unsubscribeBlock.classList.add("d-none")
+            return
+          }
+
+          fetch(`/api/newsletter/status?email=${encodeURIComponent(email)}`, {
+            headers: {
+              [csrfHeader]: csrfToken,
+            },
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.subscribed) {
+                currentEmail = email
+                subscribeBlock.classList.add("d-none")
+                unsubscribeBlock.classList.remove("d-none")
+                document.getElementById("subscribedEmail").textContent = email
+              } else {
+                subscribeBlock.classList.remove("d-none")
+                unsubscribeBlock.classList.add("d-none")
+              }
+            })
+            .catch(() => {
+              subscribeBlock.classList.remove("d-none")
+              unsubscribeBlock.classList.add("d-none")
+            })
+        }
+
+        // Обработчик формы подписки
+        if (subscribeForm) {
+          subscribeForm.addEventListener("submit", function (e) {
+            e.preventDefault()
+
+            const email = document.getElementById("subscribeEmail").value
+
+            fetch("/api/newsletter/subscribe", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                [csrfHeader]: csrfToken,
+              },
+              body: "email=" + encodeURIComponent(email),
+            })
+              .then(response => {
+                if (response.ok) {
+                  successAlert.classList.remove("d-none")
+                  errorAlert.classList.add("d-none")
+                  unsubscribeSuccess.classList.add("d-none")
+                  currentEmail = email
+                  setTimeout(() => {
+                    checkSubscriptionStatus(email)
+                    successAlert.classList.add("d-none")
+                  }, 2000)
+                } else {
+                  throw new Error("Ошибка при подписке")
+                }
+              })
+              .catch(error => {
+                errorAlert.classList.remove("d-none")
+                successAlert.classList.add("d-none")
+                unsubscribeSuccess.classList.add("d-none")
+              })
+          })
+        }
+
+        // Функция отписки от рассылки
+        window.unsubscribe = function () {
+          if (!currentEmail) return
+
+          fetch(
+            `/api/newsletter/unsubscribe?email=${encodeURIComponent(
+              currentEmail
+            )}`,
+            {
+              method: "POST",
+              headers: {
+                [csrfHeader]: csrfToken,
+              },
+            }
+          )
+            .then(response => {
+              if (response.ok) {
+                unsubscribeSuccess.classList.remove("d-none")
+                successAlert.classList.add("d-none")
+                errorAlert.classList.add("d-none")
+                setTimeout(() => {
+                  currentEmail = null
+                  document.getElementById("subscribeEmail").value = ""
+                  checkSubscriptionStatus(null)
+                  unsubscribeSuccess.classList.add("d-none")
+                }, 2000)
+              } else {
+                throw new Error("Ошибка при отписке")
+              }
+            })
+            .catch(() => {
+              errorAlert.classList.remove("d-none")
+              successAlert.classList.add("d-none")
+              unsubscribeSuccess.classList.add("d-none")
+            })
+        }
+
+        // Обработчик изменения email в форме
+        document
+          .getElementById("subscribeEmail")
+          .addEventListener("input", function (e) {
+            checkSubscriptionStatus(e.target.value)
+          })
+      })
+    </script>
   </body>
 </html>

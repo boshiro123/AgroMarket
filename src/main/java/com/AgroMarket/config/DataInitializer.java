@@ -49,7 +49,6 @@ public class DataInitializer {
           .lastName("Пользователь")
           .phone("+375291234567")
           .address("г. Минск, ул. Примерная, д. 1")
-          .subscribeToNewsletter(true)
           .roles(Set.of(userRole))
           .build();
 

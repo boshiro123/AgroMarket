@@ -31,5 +31,5 @@ public class UserRegistrationDto {
 
   private String phone;
   private String address;
-  private boolean subscribeToNewsletter;
+  private String global;
 }

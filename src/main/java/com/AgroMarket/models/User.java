@@ -35,8 +35,8 @@ public class User {
   private String phone;
   private String address;
 
-  @Column(nullable = false)
-  private boolean subscribeToNewsletter;
+  @Column(name = "subscribe_to_newsletter")
+  private Boolean subscribeToNewsletter = false;
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

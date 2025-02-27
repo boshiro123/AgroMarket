@@ -77,8 +77,9 @@
                   </div>
                   <div class="col-md-2 text-end">
                     <button
-                      class="btn btn-outline-danger btn-sm"
-                      th:onclick="'removeItem(' + ${item.id} + ')'"
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      th:onclick="'removeFromCart(' + ${item.product.id} + ')'"
                     >
                       <i class="bi bi-trash"></i>
                     </button>
@@ -128,6 +129,15 @@
             'meta[name="_csrf_header"]'
           )?.content
 
+          // Функция для добавления CSRF токена в заголовки
+          function addCsrfToHeaders(headers = {}) {
+            return {
+              ...headers,
+              [csrfHeader]: csrfToken,
+            }
+          }
+
+          // Функция обновления количества товара
           window.updateQuantity = function (itemId, value) {
             let quantity
             if (typeof value === "number") {
@@ -142,17 +152,11 @@
               if (quantity < 1) quantity = 1
             }
 
-            const headers = {
-              "Content-Type": "application/json",
-            }
-
-            if (csrfToken && csrfHeader) {
-              headers[csrfHeader] = csrfToken
-            }
-
             fetch(`/cart/update/${itemId}?quantity=${quantity}`, {
               method: "POST",
-              headers: headers,
+              headers: addCsrfToHeaders({
+                "Content-Type": "application/json",
+              }),
             }).then(response => {
               if (response.ok) {
                 location.reload()
@@ -162,21 +166,14 @@
             })
           }
 
-          window.removeItem = function (itemId) {
+          // Функция удаления товара из корзины
+          window.removeFromCart = function (productId) {
             if (
               confirm("Вы уверены, что хотите удалить этот товар из корзины?")
             ) {
-              const headers = {
-                "Content-Type": "application/json",
-              }
-
-              if (csrfToken && csrfHeader) {
-                headers[csrfHeader] = csrfToken
-              }
-
-              fetch(`/cart/remove/${itemId}`, {
+              fetch(`/cart/remove/${productId}`, {
                 method: "POST",
-                headers: headers,
+                headers: addCsrfToHeaders(),
               }).then(response => {
                 if (response.ok) {
                   location.reload()
@@ -187,19 +184,12 @@
             }
           }
 
+          // Функция очистки корзины
           window.clearCart = function () {
             if (confirm("Вы уверены, что хотите очистить корзину?")) {
-              const headers = {
-                "Content-Type": "application/json",
-              }
-
-              if (csrfToken && csrfHeader) {
-                headers[csrfHeader] = csrfToken
-              }
-
               fetch("/cart/clear", {
                 method: "POST",
-                headers: headers,
+                headers: addCsrfToHeaders(),
               }).then(response => {
                 if (response.ok) {
                   location.reload()

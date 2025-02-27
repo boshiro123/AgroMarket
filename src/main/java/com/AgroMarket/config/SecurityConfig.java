@@ -25,10 +25,10 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/cart/**", "/admin/orders/*/status", "/admin/products/*"))
+            .ignoringRequestMatchers("/cart/**", "/admin/orders/*/status", "/admin/products/*", "/api/newsletter/**"))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/", "/home", "/register", "/products/**", "/categories/**", "/images/**", "/css/**",
-                "/js/**")
+                "/js/**", "/api/newsletter/**")
             .permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .requestMatchers("/cart/**").authenticated()
