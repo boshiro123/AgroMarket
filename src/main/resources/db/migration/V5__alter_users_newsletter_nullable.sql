@@ -1,1 +1,0 @@
-ALTER TABLE users ALTER COLUMN subscribe_to_newsletter DROP NOT NULL; 

@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
-  private final Path rootLocation = Paths.get("uploads");
+  private final Path rootLocation = Paths.get("/app/images");
 
   public FileStorageServiceImpl() {
     try {
@@ -32,7 +32,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
     Files.copy(file.getInputStream(), rootLocation.resolve(filename));
 
-    return "/uploads/" + filename;
+    return "/images/" + filename;
   }
 
   @Override

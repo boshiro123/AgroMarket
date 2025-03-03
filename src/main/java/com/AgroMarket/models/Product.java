@@ -20,7 +20,7 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String name;
 
   @Column(columnDefinition = "TEXT")
@@ -43,4 +43,5 @@ public class Product {
 
   @UpdateTimestamp
   private LocalDateTime updatedAt;
+
 }
